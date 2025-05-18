@@ -1,16 +1,18 @@
-import { initializeApp, cert } from 'firebase-admin/app';
+import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 
-// Initialize Firebase Admin
-const app = initializeApp({
-  credential: cert({
-    projectId: "tracko-ext",
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n')
-  })
-});
+// Initialize Firebase Admin only if it hasn't been initialized
+if (!getApps().length) {
+  initializeApp({
+    credential: cert({
+      projectId: "tracko-ext",
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+    })
+  });
+}
 
-const auth = getAuth(app);
+const auth = getAuth();
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -24,12 +26,18 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'User ID is required' });
     }
 
+    console.log('Creating custom token for user:', uid);
+    
     // Create a custom token
     const customToken = await auth.createCustomToken(uid);
+    console.log('Custom token created successfully');
     
     res.status(200).json({ token: customToken });
   } catch (error) {
     console.error('Error creating custom token:', error);
-    res.status(500).json({ error: 'Failed to create custom token' });
+    res.status(500).json({ 
+      error: 'Failed to create custom token',
+      details: error.message 
+    });
   }
 } 

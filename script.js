@@ -130,10 +130,16 @@ function showDashboard(user) {
       });
       
       if (!response.ok) {
-        throw new Error('Failed to get custom token');
+        const errorData = await response.json();
+        console.error('Failed to get custom token:', errorData);
+        throw new Error(errorData.details || 'Failed to get custom token');
       }
       
       const { token } = await response.json();
+      if (!token) {
+        throw new Error('No token received from server');
+      }
+      
       console.log('Got custom token, length:', token.length);
       
       // Send the token to the extension

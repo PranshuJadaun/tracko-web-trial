@@ -1,9 +1,12 @@
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 
-// Initialize Firebase Admin only if it hasn't been initialized
-if (!getApps().length) {
-  try {
+let firebaseApp;
+let auth;
+
+try {
+  console.log('Checking Firebase Admin initialization...');
+  if (!getApps().length) {
     console.log('Initializing Firebase Admin...');
     const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
     
@@ -14,7 +17,7 @@ if (!getApps().length) {
       throw new Error('Missing Firebase Admin credentials');
     }
 
-    initializeApp({
+    firebaseApp = initializeApp({
       credential: cert({
         projectId: "tracko-ext",
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
@@ -22,13 +25,17 @@ if (!getApps().length) {
       })
     });
     console.log('Firebase Admin initialized successfully');
-  } catch (error) {
-    console.error('Error initializing Firebase Admin:', error);
-    throw error; // Re-throw to prevent the app from running with invalid credentials
+  } else {
+    console.log('Firebase Admin already initialized');
+    firebaseApp = getApps()[0];
   }
+  
+  auth = getAuth(firebaseApp);
+  console.log('Firebase Auth initialized successfully');
+} catch (error) {
+  console.error('Error during Firebase Admin initialization:', error);
+  throw error;
 }
-
-const auth = getAuth();
 
 export default async function handler(req, res) {
   // Set JSON content type for all responses
@@ -53,13 +60,14 @@ export default async function handler(req, res) {
     
     return res.status(200).json({ token: customToken });
   } catch (error) {
-    console.error('Error in API:', error);
+    console.error('Error in API handler:', error);
     // Always return JSON, even for errors
     return res.status(500).json({ 
       error: {
-        code: 'FIREBASE_ERROR',
+        code: error.code || 'FIREBASE_ERROR',
         message: error.message || 'Unknown error',
-        details: error.stack
+        details: error.stack,
+        type: error.name
       }
     });
   }

@@ -180,11 +180,15 @@ function showDashboard(user) {
       
       if (!response.ok) {
         console.error('Server error:', responseData);
-        const errorMessage = responseData.error?.message || 
-                            responseData.error?.details || 
-                            responseData.error || 
-                            'Server error';
-        throw new Error(errorMessage);
+        const error = responseData.error || {};
+        const errorMessage = [
+          error.message,
+          error.details,
+          error.code,
+          error.type
+        ].filter(Boolean).join(' - ');
+        
+        throw new Error(errorMessage || 'Server error');
       }
 
       // For testing, just show the response

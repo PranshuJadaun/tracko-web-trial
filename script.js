@@ -66,6 +66,8 @@ function setupUserDoc(user) {
 
 // Display the dashboard and use a real-time listener to fetch and display data
 function showDashboard(user) {
+  console.log('Showing dashboard for user:', user.uid);
+  
   // Hide login and display dashboard
   document.getElementById("login-section").classList.add("hidden");
   document.getElementById("dashboard").classList.remove("hidden");
@@ -81,10 +83,6 @@ function showDashboard(user) {
       // Update the numeric displays
       document.getElementById("academic-data").textContent = categories.academic || 0;
       document.getElementById("entertainment-data").textContent = categories.entertainment || 0;
-      
-      // // Optionally, update additional lists if needed
-      // document.getElementById("academic-list").innerHTML = `<li>academic: ${categories.academic} mins</li>`;
-      // document.getElementById("entertainment-list").innerHTML = `<li>entertainment: ${categories.entertainment} mins</li>`;
     } else {
       console.warn("No stats found for this user.");
     }
@@ -94,27 +92,33 @@ function showDashboard(user) {
 
   // Add connect extension button if it doesn't exist
   const headerButtons = document.querySelector('.header-buttons');
+  console.log('Header buttons container:', headerButtons);
+  
   if (!document.getElementById('connect-extension-btn')) {
+    console.log('Creating connect extension button');
     const connectBtn = document.createElement('button');
     connectBtn.id = 'connect-extension-btn';
     connectBtn.className = 'connect-btn';
     connectBtn.textContent = 'Connect Extension';
     headerButtons.appendChild(connectBtn);
+    console.log('Connect button added to DOM');
 
     // Add click handler for the connect button
     connectBtn.addEventListener('click', async () => {
       console.log('Connect Extension button clicked');
       try {
+        console.log('Getting ID token for user:', user.uid);
         const token = await user.getIdToken();
-        console.log('Got ID token, sending to extension');
+        console.log('Got ID token, length:', token.length);
         
         // Send the token to the extension
         const message = {
           type: 'EXT_AUTH_TOKEN',
           token: token
         };
-        console.log('Sending message to extension:', message);
+        console.log('Sending message to extension:', { type: message.type, tokenLength: message.token.length });
         window.postMessage(message, '*');
+        console.log('Message sent to extension');
 
         // Update button state
         connectBtn.textContent = 'Connecting...';
@@ -122,9 +126,17 @@ function showDashboard(user) {
 
         // Listen for response from extension
         const responseHandler = (event) => {
-          if (event.origin !== window.location.origin) return;
+          console.log('Received message in response handler:', event.data);
+          console.log('Message origin:', event.origin);
+          console.log('Current origin:', window.location.origin);
+          
+          if (event.origin !== window.location.origin) {
+            console.log('Ignoring message from different origin');
+            return;
+          }
           
           if (event.data && event.data.type === 'AUTH_RESPONSE') {
+            console.log('Received AUTH_RESPONSE:', event.data);
             if (event.data.success) {
               connectBtn.textContent = 'Connected ✓';
               connectBtn.classList.add('connected');
@@ -137,12 +149,16 @@ function showDashboard(user) {
         };
 
         window.addEventListener('message', responseHandler);
+        console.log('Response handler added');
       } catch (error) {
         console.error('Error connecting to extension:', error);
         connectBtn.textContent = 'Connection Failed';
         connectBtn.disabled = false;
       }
     });
+    console.log('Click handler added to connect button');
+  } else {
+    console.log('Connect button already exists');
   }
 }
 

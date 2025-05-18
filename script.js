@@ -149,7 +149,7 @@ document.getElementById('connect-extension-btn').addEventListener('click', async
         return;
       }
 
-      if (event.data.type === 'AUTH_RESPONSE') {
+      if (event.data && event.data.type === 'AUTH_RESPONSE') {
         console.log('Received AUTH_RESPONSE:', event.data);
         if (event.data.success) {
           console.log('Connection successful, updating UI');
@@ -195,6 +195,7 @@ function validateConnection() {
   window.addEventListener('message', function validateResponseHandler(event) {
     console.log('Received validation response:', event.data);
     console.log('Message origin:', event.origin);
+    console.log('Current window location:', window.location.href);
     
     // Verify the origin
     if (event.origin !== 'https://tracko-web-trial-g1z6.vercel.app') {
@@ -202,7 +203,7 @@ function validateConnection() {
       return;
     }
 
-    if (event.data.type === 'VALIDATE_RESPONSE') {
+    if (event.data && event.data.type === 'VALIDATE_RESPONSE') {
       const validateBtn = document.getElementById('validate-connection-btn');
       if (event.data.success) {
         validateBtn.textContent = 'Connection Valid ✓';

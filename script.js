@@ -148,7 +148,7 @@ function showDashboard(user) {
       
       if (!testResponse.ok) {
         console.error('Test server error:', testData);
-        throw new Error(testData.details || testData.error || 'Server error');
+        throw new Error(testData.error?.message || testData.error || 'Server error');
       }
 
       // If test is successful, try the real endpoint
@@ -180,7 +180,11 @@ function showDashboard(user) {
       
       if (!response.ok) {
         console.error('Server error:', responseData);
-        throw new Error(responseData.details || responseData.error || 'Server error');
+        const errorMessage = responseData.error?.message || 
+                            responseData.error?.details || 
+                            responseData.error || 
+                            'Server error';
+        throw new Error(errorMessage);
       }
 
       // For testing, just show the response

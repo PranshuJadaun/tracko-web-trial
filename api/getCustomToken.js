@@ -45,21 +45,22 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'User ID is required' });
     }
 
-    // For testing, just return the UID
-    return res.status(200).json({ 
-      message: 'Test successful',
-      uid: uid,
-      env: {
-        hasClientEmail: !!process.env.FIREBASE_CLIENT_EMAIL,
-        hasPrivateKey: !!process.env.FIREBASE_PRIVATE_KEY
-      }
-    });
+    console.log('Creating custom token for user:', uid);
+    
+    // Create a custom token
+    const customToken = await auth.createCustomToken(uid);
+    console.log('Custom token created successfully');
+    
+    return res.status(200).json({ token: customToken });
   } catch (error) {
+    console.error('Error in API:', error);
     // Always return JSON, even for errors
     return res.status(500).json({ 
-      error: 'Server error',
-      details: error.message || 'Unknown error',
-      type: 'json_error'
+      error: {
+        code: 'FIREBASE_ERROR',
+        message: error.message || 'Unknown error',
+        details: error.stack
+      }
     });
   }
 } 

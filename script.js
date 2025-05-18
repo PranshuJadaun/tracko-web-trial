@@ -10,16 +10,23 @@ console.log('TracKO website script loaded - ' + window.location.href);
 // Handle Google Sign-In
 loginBtn.addEventListener("click", () => {
   const provider = new firebase.auth.GoogleAuthProvider();
-  firebase.auth().signInWithPopup(provider)
-    .then(result => {
-      const user = result.user;
-      setupUserDoc(user);
-      showDashboard(user);
-    })
+  // Use redirect instead of popup
+  firebase.auth().signInWithRedirect(provider)
     .catch(error => {
       console.error("Sign-in error:", error);
       alert("Sign-in failed!");
     });
+});
+
+// Handle the redirect result
+firebase.auth().getRedirectResult().then(result => {
+  if (result.user) {
+    console.log('Sign-in successful after redirect');
+    setupUserDoc(result.user);
+    showDashboard(result.user);
+  }
+}).catch(error => {
+  console.error("Redirect sign-in error:", error);
 });
 
 // Handle Logout
@@ -33,8 +40,11 @@ logoutBtn.addEventListener("click", () => {
 // Listen for authentication state changes
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
+    console.log('Auth state changed - user signed in:', user.uid);
     setupUserDoc(user);
     showDashboard(user);
+  } else {
+    console.log('Auth state changed - no user');
   }
 });
 

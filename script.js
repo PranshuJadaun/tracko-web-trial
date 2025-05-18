@@ -4,6 +4,9 @@
 const loginBtn = document.getElementById("login-btn");
 const logoutBtn = document.getElementById("logout-btn");
 
+// Add a log when script loads
+console.log('TracKO website script loaded');
+
 // Handle Google Sign-In
 loginBtn.addEventListener("click", () => {
   const provider = new firebase.auth.GoogleAuthProvider();
@@ -125,16 +128,19 @@ document.getElementById('connect-extension-btn').addEventListener('click', async
     console.log('Got ID token, sending to extension');
     
     // Send the token to the extension
-    window.postMessage({
+    const message = {
       type: 'AUTH_TOKEN',
       token: token
-    }, '*');
+    };
+    console.log('Sending message to extension:', message);
+    window.postMessage(message, '*');
 
     console.log('Message sent to extension, waiting for response');
 
     // Listen for response from extension
     window.addEventListener('message', function authResponseHandler(event) {
       console.log('Received message:', event.data);
+      console.log('Message origin:', event.origin);
       
       // Verify the origin
       if (event.origin !== 'https://tracko-web-trial-g1z6.vercel.app') {
@@ -177,12 +183,15 @@ document.getElementById('connect-extension-btn').addEventListener('click', async
 // Function to validate connection
 function validateConnection() {
   console.log('Validating connection');
-  window.postMessage({
+  const message = {
     type: 'VALIDATE_CONNECTION'
-  }, '*');
+  };
+  console.log('Sending validation message:', message);
+  window.postMessage(message, '*');
 
   window.addEventListener('message', function validateResponseHandler(event) {
     console.log('Received validation response:', event.data);
+    console.log('Message origin:', event.origin);
     
     // Verify the origin
     if (event.origin !== 'https://tracko-web-trial-g1z6.vercel.app') {

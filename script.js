@@ -154,7 +154,10 @@ function showDashboard(user) {
       // Check Firebase initialization status
       if (!testData.success) {
         const error = testData.firebase.error;
-        throw new Error(`Firebase initialization failed: ${error.message}`);
+        const envInfo = testData.environment;
+        console.error('Firebase initialization failed:', error);
+        console.error('Environment status:', envInfo);
+        throw new Error(`Firebase initialization failed: ${error.message}\nEnvironment: ${JSON.stringify(envInfo, null, 2)}`);
       }
 
       // If Firebase is initialized, try the real endpoint

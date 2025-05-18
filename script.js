@@ -119,8 +119,40 @@ function showDashboard(user) {
         return;
       }
 
-      console.log('Getting custom token for user:', user.uid);
-      // Get a custom token from your backend
+      console.log('Testing API connection...');
+      // Test the API endpoint first
+      const testResponse = await fetch('https://tracko-web-trial-g1z6.vercel.app/api/test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ uid: user.uid })
+      });
+      
+      console.log('Test response status:', testResponse.status);
+      console.log('Test response headers:', Object.fromEntries(testResponse.headers.entries()));
+      
+      let testData;
+      const testText = await testResponse.text();
+      console.log('Test raw response:', testText);
+      
+      try {
+        testData = JSON.parse(testText);
+        console.log('Test parsed response:', testData);
+      } catch (e) {
+        console.error('Failed to parse test response:', e);
+        console.error('Test response text:', testText);
+        throw new Error('Server returned invalid JSON: ' + testText);
+      }
+      
+      if (!testResponse.ok) {
+        console.error('Test server error:', testData);
+        throw new Error(testData.details || testData.error || 'Server error');
+      }
+
+      // If test is successful, try the real endpoint
+      console.log('Test successful, trying real endpoint...');
       const response = await fetch('https://tracko-web-trial-g1z6.vercel.app/api/getCustomToken', {
         method: 'POST',
         headers: {

@@ -1,0 +1,99 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f6f9;
+  color: #333;
+}
+
+.center {
+  text-align: center;
+  margin-top: 20vh;
+}
+
+h1, h2 {
+  margin: 0.5em 0;
+}
+
+p {
+  color: #666;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.hidden {
+  display: none;
+}
+
+#dashboard {
+  padding: 2rem;
+  max-width: 900px;
+  margin: 2rem auto;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.profile-area {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+#logout-btn {
+  background-color: #dc3545;
+}
+
+#logout-btn:hover {
+  background-color: #a71d2a;
+}
+
+.stats-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.stats-box {
+  flex: 1 1 45%;
+  background-color: #f1f3f5;
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.video-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 1rem;
+}
+
+.video-list li {
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #ccc;
+}
+
+.test-update {
+  margin-top: 2rem;
+  display: block;
+}

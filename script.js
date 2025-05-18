@@ -129,13 +129,20 @@ function showDashboard(user) {
         body: JSON.stringify({ uid: user.uid })
       });
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Failed to get custom token:', errorData);
-        throw new Error(errorData.details || 'Failed to get custom token');
+      let responseData;
+      try {
+        responseData = await response.json();
+      } catch (e) {
+        console.error('Failed to parse response:', e);
+        throw new Error('Failed to parse server response');
       }
       
-      const { token } = await response.json();
+      if (!response.ok) {
+        console.error('Server error:', responseData);
+        throw new Error(responseData.details || responseData.error || 'Server error');
+      }
+      
+      const { token } = responseData;
       if (!token) {
         throw new Error('No token received from server');
       }

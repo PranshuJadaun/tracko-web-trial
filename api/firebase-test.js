@@ -10,7 +10,8 @@ export default async function handler(req, res) {
       hasClientEmail: !!process.env.FIREBASE_CLIENT_EMAIL,
       hasPrivateKey: !!process.env.FIREBASE_PRIVATE_KEY,
       privateKeyLength: process.env.FIREBASE_PRIVATE_KEY?.length || 0,
-      clientEmailLength: process.env.FIREBASE_CLIENT_EMAIL?.length || 0
+      clientEmailLength: process.env.FIREBASE_CLIENT_EMAIL?.length || 0,
+      projectId: "tracko-ext"
     };
 
     console.log('Environment info:', envInfo);
@@ -29,6 +30,14 @@ export default async function handler(req, res) {
           throw new Error('Missing Firebase Admin credentials');
         }
 
+        // Log private key format (without exposing the actual key)
+        console.log('Private key format:', {
+          startsWith: privateKey.substring(0, 20) + '...',
+          endsWith: '...' + privateKey.substring(privateKey.length - 20),
+          containsNewlines: privateKey.includes('\n'),
+          length: privateKey.length
+        });
+
         firebaseApp = initializeApp({
           credential: cert({
             projectId: "tracko-ext",
@@ -46,7 +55,12 @@ export default async function handler(req, res) {
       console.log('Firebase Auth initialized successfully');
     } catch (error) {
       console.error('Firebase initialization error:', error);
-      initError = error;
+      initError = {
+        message: error.message,
+        code: error.code,
+        name: error.name,
+        stack: error.stack
+      };
     }
 
     // Return diagnostic information
@@ -56,11 +70,7 @@ export default async function handler(req, res) {
       firebase: {
         initialized: !!firebaseApp,
         hasAuth: !!auth,
-        error: initError ? {
-          message: initError.message,
-          code: initError.code,
-          name: initError.name
-        } : null
+        error: initError
       }
     });
   } catch (error) {
@@ -70,7 +80,8 @@ export default async function handler(req, res) {
         message: error.message,
         code: error.code,
         name: error.name,
-        stack: error.stack
+        stack: error.stack,
+        type: 'HANDLER_ERROR'
       }
     });
   }

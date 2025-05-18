@@ -10,23 +10,16 @@ console.log('TracKO website script loaded - ' + window.location.href);
 // Handle Google Sign-In
 loginBtn.addEventListener("click", () => {
   const provider = new firebase.auth.GoogleAuthProvider();
-  // Use redirect instead of popup
-  firebase.auth().signInWithRedirect(provider)
+  firebase.auth().signInWithPopup(provider)
+    .then(result => {
+      const user = result.user;
+      setupUserDoc(user);
+      showDashboard(user);
+    })
     .catch(error => {
       console.error("Sign-in error:", error);
       alert("Sign-in failed!");
     });
-});
-
-// Handle the redirect result
-firebase.auth().getRedirectResult().then(result => {
-  if (result.user) {
-    console.log('Sign-in successful after redirect');
-    setupUserDoc(result.user);
-    showDashboard(result.user);
-  }
-}).catch(error => {
-  console.error("Redirect sign-in error:", error);
 });
 
 // Handle Logout
@@ -98,6 +91,59 @@ function showDashboard(user) {
   }, error => {
     console.error("Error with onSnapshot:", error);
   });
+
+  // Add connect extension button if it doesn't exist
+  const headerButtons = document.querySelector('.header-buttons');
+  if (!document.getElementById('connect-extension-btn')) {
+    const connectBtn = document.createElement('button');
+    connectBtn.id = 'connect-extension-btn';
+    connectBtn.className = 'connect-btn';
+    connectBtn.textContent = 'Connect Extension';
+    headerButtons.appendChild(connectBtn);
+
+    // Add click handler for the connect button
+    connectBtn.addEventListener('click', async () => {
+      console.log('Connect Extension button clicked');
+      try {
+        const token = await user.getIdToken();
+        console.log('Got ID token, sending to extension');
+        
+        // Send the token to the extension
+        const message = {
+          type: 'EXT_AUTH_TOKEN',
+          token: token
+        };
+        console.log('Sending message to extension:', message);
+        window.postMessage(message, '*');
+
+        // Update button state
+        connectBtn.textContent = 'Connecting...';
+        connectBtn.disabled = true;
+
+        // Listen for response from extension
+        const responseHandler = (event) => {
+          if (event.origin !== window.location.origin) return;
+          
+          if (event.data && event.data.type === 'AUTH_RESPONSE') {
+            if (event.data.success) {
+              connectBtn.textContent = 'Connected ✓';
+              connectBtn.classList.add('connected');
+            } else {
+              connectBtn.textContent = 'Connection Failed';
+              connectBtn.disabled = false;
+            }
+            window.removeEventListener('message', responseHandler);
+          }
+        };
+
+        window.addEventListener('message', responseHandler);
+      } catch (error) {
+        console.error('Error connecting to extension:', error);
+        connectBtn.textContent = 'Connection Failed';
+        connectBtn.disabled = false;
+      }
+    });
+  }
 }
 
 // Test Button: Update academic time by 10 minutes to simulate an update from your extension.

@@ -109,16 +109,20 @@ document.getElementById("update-academic-btn").addEventListener("click", () => {
 
 // Add event listener for connect extension button
 document.getElementById('connect-extension-btn').addEventListener('click', async () => {
+  console.log('Connect Extension button clicked');
   try {
     // Get the current user
     const user = firebase.auth().currentUser;
     if (!user) {
+      console.log('No user found, please sign in first');
       alert('Please sign in first');
       return;
     }
 
+    console.log('Getting ID token for user:', user.uid);
     // Get the ID token
     const token = await user.getIdToken();
+    console.log('Got ID token, sending to extension');
     
     // Send the token to the extension
     window.postMessage({
@@ -126,9 +130,20 @@ document.getElementById('connect-extension-btn').addEventListener('click', async
       token: token
     }, '*');
 
+    console.log('Message sent to extension, waiting for response');
+
     // Listen for response from extension
     window.addEventListener('message', function authResponseHandler(event) {
+      console.log('Received message:', event.data);
+      
+      // Verify the origin
+      if (event.origin !== 'https://tracko-web-trial-g1z6.vercel.app') {
+        console.log('Ignoring message from unknown origin:', event.origin);
+        return;
+      }
+
       if (event.data.type === 'AUTH_RESPONSE') {
+        console.log('Received AUTH_RESPONSE:', event.data);
         if (event.data.success) {
           // Update button text and style
           const connectBtn = document.getElementById('connect-extension-btn');
@@ -138,13 +153,16 @@ document.getElementById('connect-extension-btn').addEventListener('click', async
           
           // Add validate button
           const headerButtons = document.querySelector('.header-buttons');
-          const validateBtn = document.createElement('button');
-          validateBtn.id = 'validate-connection-btn';
-          validateBtn.className = 'validate-btn';
-          validateBtn.textContent = 'Validate Connection';
-          validateBtn.onclick = validateConnection;
-          headerButtons.appendChild(validateBtn);
+          if (!document.getElementById('validate-connection-btn')) {
+            const validateBtn = document.createElement('button');
+            validateBtn.id = 'validate-connection-btn';
+            validateBtn.className = 'validate-btn';
+            validateBtn.textContent = 'Validate Connection';
+            validateBtn.onclick = validateConnection;
+            headerButtons.appendChild(validateBtn);
+          }
         } else {
+          console.error('Connection failed:', event.data.error);
           alert('Failed to connect to extension: ' + event.data.error);
         }
         window.removeEventListener('message', authResponseHandler);
@@ -158,11 +176,20 @@ document.getElementById('connect-extension-btn').addEventListener('click', async
 
 // Function to validate connection
 function validateConnection() {
+  console.log('Validating connection');
   window.postMessage({
     type: 'VALIDATE_CONNECTION'
   }, '*');
 
   window.addEventListener('message', function validateResponseHandler(event) {
+    console.log('Received validation response:', event.data);
+    
+    // Verify the origin
+    if (event.origin !== 'https://tracko-web-trial-g1z6.vercel.app') {
+      console.log('Ignoring message from unknown origin:', event.origin);
+      return;
+    }
+
     if (event.data.type === 'VALIDATE_RESPONSE') {
       const validateBtn = document.getElementById('validate-connection-btn');
       if (event.data.success) {

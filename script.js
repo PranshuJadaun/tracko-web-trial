@@ -102,7 +102,8 @@ function showDashboard(user) {
     connectBtn.textContent = 'Connect Extension';
     
     // Add click handler directly to the button
-    connectBtn.onclick = async function() {
+    connectBtn.addEventListener('click', async function(e) {
+      e.preventDefault();
       console.log('Button clicked!');
       try {
         const user = firebase.auth().currentUser;
@@ -118,7 +119,7 @@ function showDashboard(user) {
         
         // Send the token to the extension
         const message = {
-          type: 'EXT_AUTH_TOKEN',
+          type: 'AUTH_TOKEN',
           token: token
         };
         console.log('Sending message to extension:', message);
@@ -133,6 +134,7 @@ function showDashboard(user) {
         const responseHandler = (event) => {
           console.log('Received message:', event.data);
           console.log('Message origin:', event.origin);
+          console.log('Current origin:', window.location.origin);
           
           if (event.origin !== window.location.origin) {
             console.log('Ignoring message from different origin');
@@ -160,7 +162,7 @@ function showDashboard(user) {
         this.disabled = false;
         alert('Failed to connect: ' + error.message);
       }
-    };
+    });
     
     headerButtons.appendChild(connectBtn);
     console.log('Connect button added to DOM');

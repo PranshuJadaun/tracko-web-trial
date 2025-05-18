@@ -94,81 +94,84 @@ function showDashboard(user) {
   const headerButtons = document.querySelector('.header-buttons');
   console.log('Header buttons container:', headerButtons);
   
-  if (!document.getElementById('connect-extension-btn')) {
-    console.log('Creating connect extension button');
-    const connectBtn = document.createElement('button');
-    connectBtn.id = 'connect-extension-btn';
-    connectBtn.className = 'connect-btn';
-    connectBtn.textContent = 'Connect Extension';
-    
-    // Add click handler directly to the button
-    connectBtn.addEventListener('click', async function(e) {
-      e.preventDefault();
-      console.log('Button clicked!');
-      try {
-        const user = firebase.auth().currentUser;
-        if (!user) {
-          console.log('No user found, please sign in first');
-          alert('Please sign in first');
+  // Remove existing button if it exists
+  const existingBtn = document.getElementById('connect-extension-btn');
+  if (existingBtn) {
+    console.log('Removing existing connect button');
+    existingBtn.remove();
+  }
+
+  console.log('Creating connect extension button');
+  const connectBtn = document.createElement('button');
+  connectBtn.id = 'connect-extension-btn';
+  connectBtn.className = 'connect-btn';
+  connectBtn.textContent = 'Connect Extension';
+  
+  // Add click handler directly to the button
+  connectBtn.addEventListener('click', async function(e) {
+    e.preventDefault();
+    console.log('Button clicked!');
+    try {
+      const user = firebase.auth().currentUser;
+      if (!user) {
+        console.log('No user found, please sign in first');
+        alert('Please sign in first');
+        return;
+      }
+
+      console.log('Getting ID token...');
+      const token = await user.getIdToken();
+      console.log('Got token, length:', token.length);
+      
+      // Send the token to the extension
+      const message = {
+        type: 'AUTH_TOKEN',
+        token: token
+      };
+      console.log('Sending message to extension:', message);
+      window.postMessage(message, '*');
+      console.log('Message sent');
+
+      // Update button state
+      this.textContent = 'Connecting...';
+      this.disabled = true;
+
+      // Listen for response from extension
+      const responseHandler = (event) => {
+        console.log('Received message:', event.data);
+        console.log('Message origin:', event.origin);
+        console.log('Current origin:', window.location.origin);
+        
+        if (event.origin !== window.location.origin) {
+          console.log('Ignoring message from different origin');
           return;
         }
-
-        console.log('Getting ID token...');
-        const token = await user.getIdToken();
-        console.log('Got token, length:', token.length);
         
-        // Send the token to the extension
-        const message = {
-          type: 'AUTH_TOKEN',
-          token: token
-        };
-        console.log('Sending message to extension:', message);
-        window.postMessage(message, '*');
-        console.log('Message sent');
-
-        // Update button state
-        this.textContent = 'Connecting...';
-        this.disabled = true;
-
-        // Listen for response from extension
-        const responseHandler = (event) => {
-          console.log('Received message:', event.data);
-          console.log('Message origin:', event.origin);
-          console.log('Current origin:', window.location.origin);
-          
-          if (event.origin !== window.location.origin) {
-            console.log('Ignoring message from different origin');
-            return;
+        if (event.data && event.data.type === 'AUTH_RESPONSE') {
+          console.log('Received AUTH_RESPONSE:', event.data);
+          if (event.data.success) {
+            this.textContent = 'Connected ✓';
+            this.classList.add('connected');
+          } else {
+            this.textContent = 'Connection Failed';
+            this.disabled = false;
+            alert('Failed to connect: ' + (event.data.error || 'Unknown error'));
           }
-          
-          if (event.data && event.data.type === 'AUTH_RESPONSE') {
-            console.log('Received AUTH_RESPONSE:', event.data);
-            if (event.data.success) {
-              this.textContent = 'Connected ✓';
-              this.classList.add('connected');
-            } else {
-              this.textContent = 'Connection Failed';
-              this.disabled = false;
-              alert('Failed to connect: ' + (event.data.error || 'Unknown error'));
-            }
-            window.removeEventListener('message', responseHandler);
-          }
-        };
+          window.removeEventListener('message', responseHandler);
+        }
+      };
 
-        window.addEventListener('message', responseHandler);
-      } catch (error) {
-        console.error('Error:', error);
-        this.textContent = 'Connection Failed';
-        this.disabled = false;
-        alert('Failed to connect: ' + error.message);
-      }
-    });
-    
-    headerButtons.appendChild(connectBtn);
-    console.log('Connect button added to DOM');
-  } else {
-    console.log('Connect button already exists');
-  }
+      window.addEventListener('message', responseHandler);
+    } catch (error) {
+      console.error('Error:', error);
+      this.textContent = 'Connection Failed';
+      this.disabled = false;
+      alert('Failed to connect: ' + error.message);
+    }
+  });
+  
+  headerButtons.appendChild(connectBtn);
+  console.log('Connect button added to DOM');
 }
 
 // Test Button: Update academic time by 10 minutes to simulate an update from your extension.

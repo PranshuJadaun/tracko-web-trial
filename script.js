@@ -5,7 +5,7 @@ const loginBtn = document.getElementById("login-btn");
 const logoutBtn = document.getElementById("logout-btn");
 
 // Add a log when script loads
-console.log('TracKO website script loaded');
+console.log('TracKO website script loaded - ' + window.location.href);
 
 // Handle Google Sign-In
 loginBtn.addEventListener("click", () => {
@@ -141,6 +141,7 @@ document.getElementById('connect-extension-btn').addEventListener('click', async
     window.addEventListener('message', function authResponseHandler(event) {
       console.log('Received message:', event.data);
       console.log('Message origin:', event.origin);
+      console.log('Current window location:', window.location.href);
       
       // Verify the origin
       if (event.origin !== 'https://tracko-web-trial-g1z6.vercel.app') {
@@ -151,6 +152,7 @@ document.getElementById('connect-extension-btn').addEventListener('click', async
       if (event.data.type === 'AUTH_RESPONSE') {
         console.log('Received AUTH_RESPONSE:', event.data);
         if (event.data.success) {
+          console.log('Connection successful, updating UI');
           // Update button text and style
           const connectBtn = document.getElementById('connect-extension-btn');
           connectBtn.textContent = 'Connected ✓';
@@ -160,6 +162,7 @@ document.getElementById('connect-extension-btn').addEventListener('click', async
           // Add validate button
           const headerButtons = document.querySelector('.header-buttons');
           if (!document.getElementById('validate-connection-btn')) {
+            console.log('Creating validate button');
             const validateBtn = document.createElement('button');
             validateBtn.id = 'validate-connection-btn';
             validateBtn.className = 'validate-btn';

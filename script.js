@@ -100,63 +100,36 @@ function showDashboard(user) {
     connectBtn.id = 'connect-extension-btn';
     connectBtn.className = 'connect-btn';
     connectBtn.textContent = 'Connect Extension';
-    headerButtons.appendChild(connectBtn);
-    console.log('Connect button added to DOM');
-
-    // Add click handler for the connect button
-    connectBtn.addEventListener('click', async () => {
-      console.log('Connect Extension button clicked');
+    
+    // Add click handler directly to the button
+    connectBtn.onclick = async function() {
+      console.log('Button clicked!');
       try {
-        console.log('Getting ID token for user:', user.uid);
+        console.log('Getting ID token...');
         const token = await user.getIdToken();
-        console.log('Got ID token, length:', token.length);
+        console.log('Got token, length:', token.length);
         
         // Send the token to the extension
         const message = {
           type: 'EXT_AUTH_TOKEN',
           token: token
         };
-        console.log('Sending message to extension:', { type: message.type, tokenLength: message.token.length });
+        console.log('Sending message to extension');
         window.postMessage(message, '*');
-        console.log('Message sent to extension');
+        console.log('Message sent');
 
         // Update button state
-        connectBtn.textContent = 'Connecting...';
-        connectBtn.disabled = true;
-
-        // Listen for response from extension
-        const responseHandler = (event) => {
-          console.log('Received message in response handler:', event.data);
-          console.log('Message origin:', event.origin);
-          console.log('Current origin:', window.location.origin);
-          
-          if (event.origin !== window.location.origin) {
-            console.log('Ignoring message from different origin');
-            return;
-          }
-          
-          if (event.data && event.data.type === 'AUTH_RESPONSE') {
-            console.log('Received AUTH_RESPONSE:', event.data);
-            if (event.data.success) {
-              connectBtn.textContent = 'Connected ✓';
-              connectBtn.classList.add('connected');
-            } else {
-              connectBtn.textContent = 'Connection Failed';
-              connectBtn.disabled = false;
-            }
-            window.removeEventListener('message', responseHandler);
-          }
-        };
-
-        window.addEventListener('message', responseHandler);
-        console.log('Response handler added');
+        this.textContent = 'Connecting...';
+        this.disabled = true;
       } catch (error) {
-        console.error('Error connecting to extension:', error);
-        connectBtn.textContent = 'Connection Failed';
-        connectBtn.disabled = false;
+        console.error('Error:', error);
+        this.textContent = 'Connection Failed';
+        this.disabled = false;
       }
-    });
-    console.log('Click handler added to connect button');
+    };
+    
+    headerButtons.appendChild(connectBtn);
+    console.log('Connect button added to DOM');
   } else {
     console.log('Connect button already exists');
   }

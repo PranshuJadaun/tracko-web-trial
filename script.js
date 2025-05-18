@@ -119,9 +119,9 @@ function showDashboard(user) {
         return;
       }
 
-      console.log('Testing API connection...');
-      // Test the API endpoint first
-      const testResponse = await fetch('https://tracko-web-trial-g1z6.vercel.app/api/test', {
+      console.log('Testing Firebase initialization...');
+      // Test Firebase initialization
+      const testResponse = await fetch('https://tracko-web-trial-g1z6.vercel.app/api/firebase-test', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -151,8 +151,14 @@ function showDashboard(user) {
         throw new Error(testData.error?.message || testData.error || 'Server error');
       }
 
-      // If test is successful, try the real endpoint
-      console.log('Test successful, trying real endpoint...');
+      // Check Firebase initialization status
+      if (!testData.success) {
+        const error = testData.firebase.error;
+        throw new Error(`Firebase initialization failed: ${error.message}`);
+      }
+
+      // If Firebase is initialized, try the real endpoint
+      console.log('Firebase initialized successfully, trying real endpoint...');
       const response = await fetch('https://tracko-web-trial-g1z6.vercel.app/api/getCustomToken', {
         method: 'POST',
         headers: {

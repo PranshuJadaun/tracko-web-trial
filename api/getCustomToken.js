@@ -34,11 +34,11 @@ export default async function handler(req, res) {
   // Set JSON content type for all responses
   res.setHeader('Content-Type', 'application/json');
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
   try {
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
+
     const { uid } = req.body;
     
     if (!uid) {
@@ -55,10 +55,11 @@ export default async function handler(req, res) {
       }
     });
   } catch (error) {
-    console.error('Error in API:', error);
+    // Always return JSON, even for errors
     return res.status(500).json({ 
       error: 'Server error',
-      details: error.message || 'Unknown error'
+      details: error.message || 'Unknown error',
+      type: 'json_error'
     });
   }
 } 

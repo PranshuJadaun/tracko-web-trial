@@ -125,6 +125,7 @@ function showDashboard(user) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
         body: JSON.stringify({ uid: user.uid })
       });
@@ -142,7 +143,7 @@ function showDashboard(user) {
       } catch (e) {
         console.error('Failed to parse response:', e);
         console.error('Response text:', responseText);
-        throw new Error('Failed to parse server response: ' + responseText);
+        throw new Error('Server returned invalid JSON: ' + responseText);
       }
       
       if (!response.ok) {

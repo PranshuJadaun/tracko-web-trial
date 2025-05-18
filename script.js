@@ -119,9 +119,9 @@ function showDashboard(user) {
         return;
       }
 
-      console.log('Testing Firebase initialization...');
-      // Test Firebase initialization
-      const testResponse = await fetch('https://tracko-web-trial-g1z6.vercel.app/api/firebase-test', {
+      console.log('Testing environment and Firebase Admin setup...');
+      // Test environment and Firebase Admin setup
+      const testResponse = await fetch('https://tracko-web-trial-g1z6.vercel.app/api/env-test', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -151,17 +151,27 @@ function showDashboard(user) {
         throw new Error(testData.error?.message || testData.error || 'Server error');
       }
 
-      // Check Firebase initialization status
+      // Check environment and Firebase Admin setup
       if (!testData.success) {
-        const error = testData.firebase.error;
-        const envInfo = testData.environment;
-        console.error('Firebase initialization failed:', error);
-        console.error('Environment status:', envInfo);
-        throw new Error(`Firebase initialization failed: ${error.message}\nEnvironment: ${JSON.stringify(envInfo, null, 2)}`);
+        throw new Error('Environment test failed');
       }
 
-      // If Firebase is initialized, try the real endpoint
-      console.log('Firebase initialized successfully, trying real endpoint...');
+      // Log environment status
+      console.log('Environment status:', testData.environment);
+      console.log('Firebase Admin status:', testData.firebaseAdmin);
+
+      // Check if Firebase Admin can be imported
+      if (!testData.firebaseAdmin.canImport) {
+        throw new Error(`Firebase Admin import failed: ${testData.firebaseAdmin.error?.message || 'Unknown error'}`);
+      }
+
+      // Check environment variables
+      if (!testData.environment.hasClientEmail || !testData.environment.hasPrivateKey) {
+        throw new Error('Missing Firebase Admin credentials in environment variables');
+      }
+
+      // If everything is set up correctly, try the real endpoint
+      console.log('Environment and Firebase Admin setup successful, trying real endpoint...');
       const response = await fetch('https://tracko-web-trial-g1z6.vercel.app/api/getCustomToken', {
         method: 'POST',
         headers: {

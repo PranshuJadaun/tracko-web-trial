@@ -119,7 +119,7 @@ function showDashboard(user) {
         return;
       }
 
-      console.log('Getting custom token...');
+      console.log('Getting custom token for user:', user.uid);
       // Get a custom token from your backend
       const response = await fetch('https://tracko-web-trial-g1z6.vercel.app/api/getCustomToken', {
         method: 'POST',
@@ -129,12 +129,19 @@ function showDashboard(user) {
         body: JSON.stringify({ uid: user.uid })
       });
       
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+      
       let responseData;
+      const responseText = await response.text();
+      console.log('Raw response:', responseText);
+      
       try {
-        responseData = await response.json();
+        responseData = JSON.parse(responseText);
       } catch (e) {
         console.error('Failed to parse response:', e);
-        throw new Error('Failed to parse server response');
+        console.error('Response text:', responseText);
+        throw new Error('Failed to parse server response: ' + responseText);
       }
       
       if (!response.ok) {

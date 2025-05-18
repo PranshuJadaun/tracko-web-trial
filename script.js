@@ -119,9 +119,22 @@ function showDashboard(user) {
         return;
       }
 
-      console.log('Getting ID token...');
-      const token = await user.getIdToken();
-      console.log('Got token, length:', token.length);
+      console.log('Getting custom token...');
+      // Get a custom token from your backend
+      const response = await fetch('https://tracko-web-trial-g1z6.vercel.app/api/getCustomToken', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ uid: user.uid })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to get custom token');
+      }
+      
+      const { token } = await response.json();
+      console.log('Got custom token, length:', token.length);
       
       // Send the token to the extension
       const message = {

@@ -130,7 +130,20 @@ document.getElementById('connect-extension-btn').addEventListener('click', async
     window.addEventListener('message', function authResponseHandler(event) {
       if (event.data.type === 'AUTH_RESPONSE') {
         if (event.data.success) {
-          alert('Successfully connected to extension!');
+          // Update button text and style
+          const connectBtn = document.getElementById('connect-extension-btn');
+          connectBtn.textContent = 'Connected ✓';
+          connectBtn.classList.add('connected');
+          connectBtn.disabled = true;
+          
+          // Add validate button
+          const headerButtons = document.querySelector('.header-buttons');
+          const validateBtn = document.createElement('button');
+          validateBtn.id = 'validate-connection-btn';
+          validateBtn.className = 'validate-btn';
+          validateBtn.textContent = 'Validate Connection';
+          validateBtn.onclick = validateConnection;
+          headerButtons.appendChild(validateBtn);
         } else {
           alert('Failed to connect to extension: ' + event.data.error);
         }
@@ -142,3 +155,24 @@ document.getElementById('connect-extension-btn').addEventListener('click', async
     alert('Failed to connect to extension. Please try again.');
   }
 });
+
+// Function to validate connection
+function validateConnection() {
+  window.postMessage({
+    type: 'VALIDATE_CONNECTION'
+  }, '*');
+
+  window.addEventListener('message', function validateResponseHandler(event) {
+    if (event.data.type === 'VALIDATE_RESPONSE') {
+      const validateBtn = document.getElementById('validate-connection-btn');
+      if (event.data.success) {
+        validateBtn.textContent = 'Connection Valid ✓';
+        validateBtn.classList.add('valid');
+      } else {
+        validateBtn.textContent = 'Connection Invalid ✗';
+        validateBtn.classList.add('invalid');
+      }
+      window.removeEventListener('message', validateResponseHandler);
+    }
+  });
+}

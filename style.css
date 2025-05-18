@@ -97,3 +97,50 @@ button:hover {
   margin-top: 2rem;
   display: block;
 }
+
+.header-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+#connect-extension-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+#connect-extension-btn:hover {
+  background-color: #0056b3;
+}
+
+#connect-extension-btn.connected {
+  background-color: #28a745;
+  cursor: default;
+}
+
+.validate-btn {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.validate-btn:hover {
+  background-color: #5a6268;
+}
+
+.validate-btn.valid {
+  background-color: #28a745;
+}
+
+.validate-btn.invalid {
+  background-color: #dc3545;
+}

@@ -105,6 +105,13 @@ function showDashboard(user) {
     connectBtn.onclick = async function() {
       console.log('Button clicked!');
       try {
+        const user = firebase.auth().currentUser;
+        if (!user) {
+          console.log('No user found, please sign in first');
+          alert('Please sign in first');
+          return;
+        }
+
         console.log('Getting ID token...');
         const token = await user.getIdToken();
         console.log('Got token, length:', token.length);
@@ -114,17 +121,44 @@ function showDashboard(user) {
           type: 'EXT_AUTH_TOKEN',
           token: token
         };
-        console.log('Sending message to extension');
+        console.log('Sending message to extension:', message);
         window.postMessage(message, '*');
         console.log('Message sent');
 
         // Update button state
         this.textContent = 'Connecting...';
         this.disabled = true;
+
+        // Listen for response from extension
+        const responseHandler = (event) => {
+          console.log('Received message:', event.data);
+          console.log('Message origin:', event.origin);
+          
+          if (event.origin !== window.location.origin) {
+            console.log('Ignoring message from different origin');
+            return;
+          }
+          
+          if (event.data && event.data.type === 'AUTH_RESPONSE') {
+            console.log('Received AUTH_RESPONSE:', event.data);
+            if (event.data.success) {
+              this.textContent = 'Connected ✓';
+              this.classList.add('connected');
+            } else {
+              this.textContent = 'Connection Failed';
+              this.disabled = false;
+              alert('Failed to connect: ' + (event.data.error || 'Unknown error'));
+            }
+            window.removeEventListener('message', responseHandler);
+          }
+        };
+
+        window.addEventListener('message', responseHandler);
       } catch (error) {
         console.error('Error:', error);
         this.textContent = 'Connection Failed';
         this.disabled = false;
+        alert('Failed to connect: ' + error.message);
       }
     };
     

@@ -138,6 +138,7 @@ function showDashboard(user) {
       
       try {
         responseData = JSON.parse(responseText);
+        console.log('Parsed response:', responseData);
       } catch (e) {
         console.error('Failed to parse response:', e);
         console.error('Response text:', responseText);
@@ -148,7 +149,14 @@ function showDashboard(user) {
         console.error('Server error:', responseData);
         throw new Error(responseData.details || responseData.error || 'Server error');
       }
-      
+
+      // For testing, just show the response
+      console.log('Test response:', responseData);
+      alert('Test successful! Check console for details.');
+      return;
+
+      // Rest of the code will be uncommented after we confirm the API is working
+      /*
       const { token } = responseData;
       if (!token) {
         throw new Error('No token received from server');
@@ -195,6 +203,7 @@ function showDashboard(user) {
       };
 
       window.addEventListener('message', responseHandler);
+      */
     } catch (error) {
       console.error('Error:', error);
       this.textContent = 'Connection Failed';

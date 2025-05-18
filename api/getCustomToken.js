@@ -45,18 +45,19 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'User ID is required' });
     }
 
-    console.log('Creating custom token for user:', uid);
-    
-    // Create a custom token
-    const customToken = await auth.createCustomToken(uid);
-    console.log('Custom token created successfully');
-    
-    return res.status(200).json({ token: customToken });
+    // For testing, just return the UID
+    return res.status(200).json({ 
+      message: 'Test successful',
+      uid: uid,
+      env: {
+        hasClientEmail: !!process.env.FIREBASE_CLIENT_EMAIL,
+        hasPrivateKey: !!process.env.FIREBASE_PRIVATE_KEY
+      }
+    });
   } catch (error) {
-    console.error('Error creating custom token:', error);
-    // Ensure we always return a JSON response
+    console.error('Error in API:', error);
     return res.status(500).json({ 
-      error: 'Failed to create custom token',
+      error: 'Server error',
       details: error.message || 'Unknown error'
     });
   }
